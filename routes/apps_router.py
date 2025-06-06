@@ -6,6 +6,7 @@ from models import IOTApp, NewIOTApp, Device
 from secutils import authenticate
 from environments import Database
 from dynsec.apps_dynsec import add_dynsec_app, delete_dynsec_app
+from dynsec.roles_dynsec import delete_dynsec_role
 
 apps_db = Database(IOTApp.Settings.name)
 device_db = Database(Device.Settings.name)
@@ -18,7 +19,7 @@ async def get_apps(jwt: str = Depends(authenticate)) -> dict:
 
 @router.post('/')
 async def add_app(newApp: NewIOTApp, jwt: str = Depends(authenticate)) -> IOTApp:
-    if newApp.appId.startswith('$'):
+    if newApp.appId.startswith('$') or newApp.appId == 'admin':
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail = f"The Id({newApp.appId}) can not be registered for AppId."
@@ -52,11 +53,15 @@ async def get_appId(appId: str, jwt: str = Depends(authenticate)) -> IOTApp:
 
 @router.delete('/{appId}')
 async def del_appId(appId: str, jwt: str = Depends(authenticate)) -> dict:
-    doc_ids = apps_db.delete(apps_db.qry.appId == appId)
-    if not doc_ids or len(doc_ids) == 0:
+    app = apps_db.getOne(apps_db.qry.appId == appId)
+    if not app:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"AppId(appId:{appId}) does not exist"
         )
+    
+    if app.get('restricted', None):
+        delete_dynsec_role(f'$apps_{appId}')
     delete_dynsec_app(appId)
+    apps_db.delete(apps_db.qry.appId == appId)
     return {"message": "AppId deleted successfully", "appId": appId}

@@ -5,7 +5,8 @@ from datetime import timezone, timedelta
 from secutils import authenticate
 from environments import Database
 from models import Device, NewDevice, IOTApp, FirmwareInfo
-from dynsec.devices_dynsec import add_dynsec_device, delete_dynsec_device, delete_dynsec_role
+from dynsec.devices_dynsec import add_dynsec_device, delete_dynsec_device
+from dynsec.roles_dynsec import delete_dynsec_role
 from dynsec.devices_actions import reboot_device_action, reset_device_action, update_metadata_action, upgrade_firmware_action
 from environments import Settings
 
@@ -103,7 +104,7 @@ async def get_devices(jwt: str = Depends(authenticate)) -> dict:
 
 @router.post('/')
 async def add_device(newDevice: NewDevice, jwt: str = Depends(authenticate)) -> Device:
-    if newDevice.devId.startswith('$'):
+    if newDevice.devId.startswith('$') or newDevice.devId == 'admin':
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail = f"The Id({newDevice.devId}) can not be registered for Device/Gateway."

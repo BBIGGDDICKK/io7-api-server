@@ -7,11 +7,13 @@ class IOTApp(BaseModel):
     createdBy: str = 'admin'
     createdDate: datetime = datetime.utcnow()
     appDesc: Optional[str]
+    restricted: bool = False
 
     class Config:
         schema_extra = {
             "example": {
                 "appId": "str",
+                "restricted": "false",
                 "appDesc": "str",
                 "createdBy": "str",
                 "createdDate": "str"
@@ -30,6 +32,7 @@ class NewIOTApp(IOTApp):
             "example": {
                 "appId": "str",
                 "password": "str",
+                "restricted": "false",
                 "appDesc": "str",
                 "createdBy": "str",
                 "createdDate": "str"

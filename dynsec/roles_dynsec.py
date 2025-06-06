@@ -59,3 +59,18 @@ def assign_role(device: str, role: str):
     }
     mqClient.publish('$CONTROL/dynamic-security/v1', json.dumps(cmd));
     logger.info(f'Assigning Role {role} to device/app {device}.')
+
+def delete_dynsec_role(role: str):
+    if role in ['admin', '$apps', '$io7_adm']:
+        logger.info(f'Cannot delete system role "{role}".')
+        return
+    cmd = {
+	    'commands': [
+	        {
+	            'command': 'deleteRole',
+	            'rolename': role
+	        }
+	    ]
+    }
+    mqClient.publish('$CONTROL/dynamic-security/v1', json.dumps(cmd))
+    logger.info(f'Deleting Role "{role}".')

@@ -2,6 +2,7 @@ import json
 import logging
 from models import NewIOTApp
 from dynsec.mqtt_conn import mqClient
+from dynsec.topicBase import ACLBase
 from environments import Settings
 
 settings = Settings()
@@ -10,6 +11,21 @@ logger.setLevel(settings.LOG_LEVEL)
 
 def add_dynsec_app(app: NewIOTApp):
     # TODO: ensure $apps role exists
+    rolename = '$apps'
+    if app.restricted:
+        rolename = f"$apps_{app.appId}"
+        acl = ACLBase(rolename)
+        cmd = {
+            'commands': [
+                {
+                    'command': 'createRole',
+                    'rolename': acl.get_id(),
+                    'acls': [ ]
+                }
+            ]
+        }
+        mqClient.publish('$CONTROL/dynamic-security/v1', json.dumps(cmd));
+
     cmd = {
         'commands': [
             {
@@ -18,7 +34,7 @@ def add_dynsec_app(app: NewIOTApp):
                 'password': app.password,
                 'roles': [
                     {
-                        'rolename': '$apps',
+                        'rolename': rolename,
                         'priority': -1
                     }
                 ]

@@ -68,20 +68,6 @@ def add_dynsec_device(device: NewDevice):
         
     mqClient.publish('$CONTROL/dynamic-security/v1', json.dumps(cmd))
 
-def delete_dynsec_role(role: str):
-    if role in ['admin', '$apps', '$io7_adm']:
-        logger.info(f'Cannot delete system role "{role}".')
-        return
-    cmd = {
-	    'commands': [
-	        {
-	            'command': 'deleteRole',
-	            'rolename': role
-	        }
-	    ]
-    }
-    mqClient.publish('$CONTROL/dynamic-security/v1', json.dumps(cmd))
-    logger.info(f'Deleting Role "{role}".')
 
 def delete_dynsec_device(device: str):
     cmd = {
