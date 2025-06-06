@@ -56,3 +56,27 @@ def delete_dynsec_app(appId: str):
     }
     mqClient.publish('$CONTROL/dynamic-security/v1', json.dumps(cmd))
     logger.info(f'Deleting App ID "{appId}".')
+
+def add_member(appId: str, devId: str, evt: bool, cmd: bool):
+    cmd = {
+        "commands": [
+            {
+                "command": "addRoleACL",
+                "rolename": f"$apps_{appId}",
+                "acltype": "subscribePattern",
+                "topic": f"iot3/{devId}/evt/#",
+                "priority": -1,
+                "allow": evt
+            },
+            {
+                "command": "addRoleACL",
+                "rolename": f"$apps_{appId}",
+                "acltype": "publishClientSend",
+                "topic": f"iot3/{devId}/cmd/#",
+                "priority": -1,
+                "allow": cmd
+            }
+        ]
+    }
+    mqClient.publish('$CONTROL/dynamic-security/v1', json.dumps(cmd))
+    logger.info(f'Adding device({devId}) to App ID "{appId}".')

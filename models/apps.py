@@ -40,3 +40,17 @@ class NewIOTApp(IOTApp):
         }
         fields = {'password': {'exclude': True}}
 
+
+class MemberDevice(BaseModel):
+    devId: str
+    evt: bool
+    cmd: bool
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "devId": "str",
+                "evt": "true",
+                "cmd": "true",
+            }
+        }
