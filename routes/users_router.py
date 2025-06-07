@@ -10,10 +10,35 @@ db = Database(User.Settings.name)
 
 @router.get('/validate_token')
 async def valid_token(jwt: str = Depends(authenticate)) -> dict:
+    """
+    Validate a JWT authentication token.
+    
+    This endpoint verifies if a provided JWT token is valid and has not expired.
+    The validation of the token can be used as the authentication and is used for the other APIs.
+    
+    Returns:
+    - Confirmation message with the validated token
+    """
     return {"detail": "Authorized", "token": jwt}
 
 @router.post('/signup')
 async def add_user(user: NewUser) -> dict:
+    """
+    Register a new admin user.
+    
+    This endpoint creates the admin user for the system.
+    No authentication is required as this is used for initial setup, and 
+    it will not create another admin user once an admin id is created and exists in the system.
+    
+    Caution:
+    - This endpoint will only work if no users exist in the system
+    - Only one admin user can be created
+    - The password will be hashed before storage
+    - Store the password securely as it cannot be recovered
+    
+    Returns:
+    - Confirmation message with the created user email
+    """
     # check if admin user exists and reject if exists
     users = db.getAll()
     if len(users) > 0:
@@ -29,6 +54,20 @@ async def add_user(user: NewUser) -> dict:
 
 @router.post("/login", response_model=TokenResponse)
 async def login(user: User) -> dict:
+    """
+    Authenticate a user and generate an access token.
+    
+    This endpoint verifies user credentials and generates a JWT token for authenticated API access.
+    No authentication is required as this is the entry point for the authentication and obtaining a token.
+    
+    Caution:
+    - Ensure proper password security when sending credentials
+    - Do not share your access token
+    - The token has an expiration time
+    
+    Returns:
+    - Access token and token type for use in subsequent authenticated requests
+    """
     qryUser = db.getOne(db.qry.email == user.email)
     if not qryUser:
         raise HTTPException(
