@@ -5,7 +5,7 @@ from datetime import timezone, timedelta
 from models import IOTApp, NewIOTApp, Device, MemberDevice
 from secutils import authenticate
 from environments import Database
-from dynsec.apps_dynsec import add_dynsec_app, delete_dynsec_app, add_member
+from dynsec.apps_dynsec import add_dynsec_app, delete_dynsec_app, add_member, remove_member
 from dynsec.roles_dynsec import delete_dynsec_role
 
 apps_db = Database(IOTApp.Settings.name)
@@ -68,7 +68,6 @@ async def del_appId(appId: str, jwt: str = Depends(authenticate)) -> dict:
 
 @router.put('/addMember/{appId}', response_model=IOTApp)
 async def addMember(appId: str, member: MemberDevice, jwt: str = Depends(authenticate)) -> dict:
-    print(appId)
     app = apps_db.getOne(apps_db.qry.appId == appId)
     if not app:
         raise HTTPException(
@@ -77,4 +76,16 @@ async def addMember(appId: str, member: MemberDevice, jwt: str = Depends(authent
         )
 
     add_member(appId, member.devId, member.evt, member.cmd)
-    return {"message": "Device is added successfully", "appId": appId, "devId" : "device"}
+    return {"message": "Device is added successfully", "appId": appId, "devId" : member.devId}
+
+@router.put('/removeMember/{appId}', response_model=IOTApp)
+async def removeMember(appId: str, devId: str, jwt: str = Depends(authenticate)) -> dict:
+    app = apps_db.getOne(apps_db.qry.appId == appId)
+    if not app:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"AppId(appId:{appId}) does not exist"
+        )
+
+    remove_member(appId, devId)
+    return {"message": "Device is removed successfully", "appId": appId, "devId" : devId}
