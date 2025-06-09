@@ -1,4 +1,5 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
+from mqtt_service import ws_manager, setup_mqtt
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import os
@@ -18,6 +19,20 @@ app.add_middleware(
     allow_headers=['*']
 )
 settings = Settings()
+
+
+@app.on_event("startup")
+def startup():
+    setup_mqtt()
+
+@app.websocket("/ws")
+async def websocket_endpoint(ws: WebSocket):
+    await ws_manager.connect(ws)
+    try:
+        while True:
+            await ws.receive_text()  # 클라이언트에서 보내는 메시지 수신 시 처리 가능
+    except WebSocketDisconnect:
+        ws_manager.disconnect(ws)
 
 @app.get('/', include_in_schema=False)
 async def welcome(request: Request) -> dict:
