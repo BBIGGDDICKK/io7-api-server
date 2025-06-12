@@ -61,7 +61,7 @@ def on_connect(client, userdata, flags, rc):
         client.subscribe('iot3/+/gateway/add')
         client.subscribe('iot3/+/gateway/query')
     else:
-        logger.warn("MQTT Connected with RC : " + str(rc))
+        logger.warning("MQTT Connected with RC : " + str(rc))
 
 mqClient = mqtt.Client(client_id='api-server')
 mqClient.username_pw_set(username, password)
