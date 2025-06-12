@@ -38,8 +38,8 @@ def get_role(role_id):
     dynsec_json = load_dynsec()
     return next((r for r in dynsec_json.get("roles",[]) if r.get("rolename") == role_id), None)
 
-def get_client_roleId(cliendId):
-    if c_id := get_client(cliendId):
+def get_client_roleId(clientId: str):
+    if c_id := get_client(clientId):
         if role := next((r for r in c_id.get("roles",[])), None):
             return role.get('rolename', None)
     return None
@@ -49,8 +49,9 @@ def get_client_role(clientId):
         return get_role(role_id)
     return None
 
-def get_device(dev_id):
-    if role := get_client_roleId(dev_id) == dev_id:
+def get_device(dev_id: str):
+    role = get_client_roleId(dev_id)
+    if role and role == dev_id:
         return get_client(dev_id)
     return None
 
